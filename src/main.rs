@@ -5,7 +5,7 @@ extern crate rocket;
 
 #[get("/")]
 fn index() -> &'static str {
-    "Hello, world!"
+    "Destroy the world!"
 }
 
 fn rocket() -> rocket::Rocket {
@@ -27,6 +27,6 @@ mod test {
         let client = Client::new(rocket()).expect("valid rocket instance");
         let mut response = client.get("/").dispatch();
         assert_eq!(response.status(), Status::Ok);
-        assert_eq!(response.body_string(), Some("Hello, world!".into()));
+        assert_eq!(response.body_string(), Some("Destroy the world!".into()));
     }
 }
