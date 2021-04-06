@@ -14,7 +14,7 @@ terraform {
 }
 
 provider "google" {
-  project = "bt-lab-walking-skeleton"
-  region  = "europe-west2"
-  zone    = "europe-west2-a"
+  project = var.project
+  region  = var.region
+  zone    = var.zone
 }

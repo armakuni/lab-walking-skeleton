@@ -9,17 +9,17 @@ show-help:
 	@echo "$$(tput bold)Available rules:$$(tput sgr0)";echo;sed -ne"/^## /{h;s/.*//;:d" -e"H;n;s/^## //;td" -e"s/:.*//;G;s/\\n## /---/;s/\\n/ /g;p;}" ${MAKEFILE_LIST}|LC_ALL='C' sort -f|awk -F --- -v n=$$(tput cols) -v i=29 -v a="$$(tput setaf 6)" -v z="$$(tput sgr0)" '{printf"%s%*s%s ",a,-i,$$1,z;m=split($$2,w," ");l=n-i;for(j=1;j<=m;j++){l-=length(w[j])+1;if(l<= 0){l=n-i-length(w[j])-1;printf"\n%*s ",-i," ";}printf"%s ",w[j];}printf"\n";}'
 
 .PHONY: test
-## Test it was built ok
+## Test it
 test:
 	RUST_BACKTRACE=1 cargo +nightly test
 
 .PHONY: build
-## Test it builds ok
+## Build a binary
 build:
 	cargo +nightly build
 
 .PHONY: run
-## Test it builds ok
+## Run the server
 run:
 	cargo +nightly run
 
@@ -33,7 +33,7 @@ lint:
 	shfmt -w -s -d ci/
 
 .PHONY: fmt
-## Format what can be foramtted
+## Format what can be formatted
 fmt:
 	cargo +nightly fmt --all
 	cargo +nightly fix --allow-dirty
@@ -49,15 +49,17 @@ clean:
 .PHONY: infrastructure-setup
 ## Setup the infrastructure for the project
 infrastructure-setup:
-	GOOGLE_APPLICATION_CREDENTIALS=$PWD/secrets/terraform-credentials.json terragrunt apply
+	GOOGLE_APPLICATION_CREDENTIALS=${ROOT_DIR}/secrets/terraform-credentials.json terragrunt apply
 
 .PHONY: infrastructure-destroy
 ## Setup the infrastructure for the project
-infrastructure-setup:
-	GOOGLE_APPLICATION_CREDENTIALS=$PWD/secrets/terraform-credentials.json terragrunt destroy
+infrastructure-destroy:
+	GOOGLE_APPLICATION_CREDENTIALS=${ROOT_DIR}/secrets/terraform-credentials.json terragrunt destroy
 
 
 .PHONY: deploy
 ## Deploy and release the application
 deploy:
-	GOOGLE_APPLICATION_CREDENTIALS=$PWD/secrets/terraform-credentials.json waypoint up
+	GOOGLE_APPLICATION_CREDENTIALS=${ROOT_DIR}/secrets/terraform-credentials.json gcloud auth configure-docker -q
+	GOOGLE_APPLICATION_CREDENTIALS=${ROOT_DIR}/secrets/terraform-credentials.json waypoint init
+	GOOGLE_APPLICATION_CREDENTIALS=${ROOT_DIR}/secrets/terraform-credentials.json waypoint up

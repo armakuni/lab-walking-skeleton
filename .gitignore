@@ -3,3 +3,5 @@
 /.waypoint/
 /terraform/.terraform/
 /lab-walking-skeleton.key
+/data.db
+/waypoint-restore.db.lock
