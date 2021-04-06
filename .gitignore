@@ -5,3 +5,4 @@
 /lab-walking-skeleton.key
 /data.db
 /waypoint-restore.db.lock
+/secrets/terraform-credentials.json

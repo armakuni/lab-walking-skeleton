@@ -49,24 +49,22 @@ clean:
 .PHONY: infrastructure-setup
 ## Setup the infrastructure for the project
 infrastructure-setup:
-	GOOGLE_APPLICATION_CREDENTIALS=${ROOT_DIR}/secrets/terraform-credentials.json terragrunt apply
+	terragrunt apply
 
 .PHONY: infrastructure-destroy
 ## Setup the infrastructure for the project
 infrastructure-destroy:
-	GOOGLE_APPLICATION_CREDENTIALS=${ROOT_DIR}/secrets/terraform-credentials.json terragrunt destroy
+	terragrunt destroy
 
 
 .PHONY: deploy
 ## Deploy and release the application
 deploy:
-	GOOGLE_APPLICATION_CREDENTIALS=${ROOT_DIR}/secrets/terraform-credentials.json gcloud auth configure-docker -q
-	GOOGLE_APPLICATION_CREDENTIALS=${ROOT_DIR}/secrets/terraform-credentials.json waypoint init
-	GOOGLE_APPLICATION_CREDENTIALS=${ROOT_DIR}/secrets/terraform-credentials.json waypoint up
+	waypoint init
+	waypoint up --app=web
 
 .PHONY: deploy-test
 ## Deploy and release the test application
 deploy-test:
-	GOOGLE_APPLICATION_CREDENTIALS=${ROOT_DIR}/secrets/terraform-credentials.json gcloud auth configure-docker -q
-	GOOGLE_APPLICATION_CREDENTIALS=${ROOT_DIR}/secrets/terraform-credentials.json waypoint init
-	GOOGLE_APPLICATION_CREDENTIALS=${ROOT_DIR}/secrets/terraform-credentials.json waypoint up -workspace=test
+	waypoint init
+	waypoint up --app=test-web
