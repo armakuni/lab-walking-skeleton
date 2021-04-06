@@ -2,10 +2,10 @@
 
 set -euo pipefail
 
-RESULT="$(curl -sSLfo- localhost:8000)"
+RESULT="$(curl -sSLfo- "${ENDPOINT:-localhost:8000}")"
 EXPECTED="Hello, world!"
 
-if [[ "$EXPECTED" != "$RESULT" ]]; then
+if [[ $EXPECTED != "$RESULT" ]]; then
 	echo "Expected to find text: '$EXPECTED' in the response, instead found '$RESULT'"
 	exit 1
 fi

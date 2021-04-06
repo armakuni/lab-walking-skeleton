@@ -11,32 +11,53 @@ show-help:
 .PHONY: test
 ## Test it was built ok
 test:
-	RUST_BACKTRACE=1 cargo test --locked
+	RUST_BACKTRACE=1 cargo +nightly test
 
 .PHONY: build
 ## Test it builds ok
 build:
-	cargo build --locked
+	cargo +nightly build
 
 .PHONY: run
 ## Test it builds ok
 run:
-	cargo run
+	cargo +nightly run
 
 .PHONY: lint
 ## Lint it
 lint:
-	cargo +stable fmt --all -- --check
-	cargo clippy --all-targets --all-features -- -D warnings -Dclippy::all -Dclippy::pedantic
-	cargo check
+	cargo +nightly fmt --all -- --check
+	cargo +nightly clippy --all-targets --all-features -- -D warnings -Dclippy::all -Dclippy::pedantic
+	cargo +nightly check
+	terraform fmt -check -recursive terraform
+	shfmt -w -s -d ci/
 
 .PHONY: fmt
 ## Format what can be foramtted
 fmt:
-	cargo +stable fmt --all
-	cargo fix --allow-dirty
+	cargo +nightly fmt --all
+	cargo +nightly fix --allow-dirty
+	terraform fmt -recursive terraform
+	terragrunt hclfmt
+	shfmt -w -s ci/
 
 .PHONY: clean
 ## Clean the build directory
 clean:
-	cargo clean
+	cargo +nightly clean
+
+.PHONY: infrastructure-setup
+## Setup the infrastructure for the project
+infrastructure-setup:
+	GOOGLE_APPLICATION_CREDENTIALS=$PWD/secrets/terraform-credentials.json terragrunt apply
+
+.PHONY: infrastructure-destroy
+## Setup the infrastructure for the project
+infrastructure-setup:
+	GOOGLE_APPLICATION_CREDENTIALS=$PWD/secrets/terraform-credentials.json terragrunt destroy
+
+
+.PHONY: deploy
+## Deploy and release the application
+deploy:
+	GOOGLE_APPLICATION_CREDENTIALS=$PWD/secrets/terraform-credentials.json waypoint up

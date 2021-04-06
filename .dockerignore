@@ -1,0 +1,5 @@
+/secrets
+/.terragrunt-cache
+/terraform
+/.waypoint
+/lab-walking-skeleton.key
