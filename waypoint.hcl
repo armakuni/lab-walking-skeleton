@@ -1,6 +1,40 @@
 
 project = "lab-walking-skeleton"
 
+app "test-web" {
+  config {
+    env = {
+      ROCKET_SECRET_KEY = jsondecode(file(abspath("platformconfig.json")))["session_key"]
+    }
+  }
+
+  build {
+    use "docker" {}
+
+    registry {
+      use "docker" {
+        image = "eu.gcr.io/${jsondecode(file(abspath("platformconfig.json")))["project"]}/lab-walking-skeleton"
+        tag   = "test"
+      }
+    }
+
+  }
+
+  deploy {
+    use "google-cloud-run" {
+      project  = jsondecode(file(abspath("platformconfig.json")))["project"]
+      location = jsondecode(file(abspath("platformconfig.json")))["region"]
+
+      port = 8000
+    }
+  }
+
+  release {
+    use "google-cloud-run" {}
+  }
+}
+
+
 app "web" {
   config {
     env = {

@@ -63,3 +63,10 @@ deploy:
 	GOOGLE_APPLICATION_CREDENTIALS=${ROOT_DIR}/secrets/terraform-credentials.json gcloud auth configure-docker -q
 	GOOGLE_APPLICATION_CREDENTIALS=${ROOT_DIR}/secrets/terraform-credentials.json waypoint init
 	GOOGLE_APPLICATION_CREDENTIALS=${ROOT_DIR}/secrets/terraform-credentials.json waypoint up
+
+.PHONY: deploy-test
+## Deploy and release the test application
+deploy-test:
+	GOOGLE_APPLICATION_CREDENTIALS=${ROOT_DIR}/secrets/terraform-credentials.json gcloud auth configure-docker -q
+	GOOGLE_APPLICATION_CREDENTIALS=${ROOT_DIR}/secrets/terraform-credentials.json waypoint init
+	GOOGLE_APPLICATION_CREDENTIALS=${ROOT_DIR}/secrets/terraform-credentials.json waypoint up -workspace=test

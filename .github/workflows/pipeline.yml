@@ -35,22 +35,15 @@ jobs:
     - name: Test
       run: make test
 
-  deploy:
+
+  deploy-infrastructure:
     runs-on: ubuntu-latest
     needs:
     - test
     if: ${{ github.ref == 'refs/heads/main' }}
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/cache@v2
-      with:
-        path: |
-          ~/.cargo/registry
-          ~/.cargo/git
-          target
-        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
     - run: brew install hashicorp/tap/terraform
-    - run: brew install hashicorp/tap/waypoint
     - run: brew install terragrunt
     - name: Set up gcloud Cloud SDK environment
       uses: google-github-actions/setup-gcloud@master
@@ -58,13 +51,52 @@ jobs:
         project_id: ${{ secrets.GCP_PROJECT_ID }}
         service_account_key: ${{ secrets.GCP_SA_KEY }}
         export_default_credentials: true
-    - run: gcloud auth configure-docker -q
     - name: Deploy Infrastructure
       run: terragrunt apply -auto-approve
+
+
+  deploy-test:
+    runs-on: ubuntu-latest
+    needs:
+    - deploy-infrastructure
+    if: ${{ github.ref == 'refs/heads/main' }}
+    steps:
+    - uses: actions/checkout@v2
+    - run: brew install hashicorp/tap/waypoint
+    - name: Set up gcloud Cloud SDK environment
+      uses: google-github-actions/setup-gcloud@master
+      with:
+        project_id: ${{ secrets.GCP_PROJECT_ID }}
+        service_account_key: ${{ secrets.GCP_SA_KEY }}
+        export_default_credentials: true
+    - run: gcloud config set run/region "$(jq -r .region platformconfig.json)"
+    - run: gcloud auth configure-docker -q
     - name: Deploy
       run: |
         waypoint init
-        waypoint up
-    - run: ./ci/smoketest
-      env:
-        ENDPOINT: https://web-goaisnc5aq-nw.a.run.app
+        waypoint up --app=test-web
+    - run: |
+        ENDPOINT="$(gcloud run services describe --platform managed test-web --format=json | jq -r .status.url)" ./ci/smoketest
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs:
+    - deploy-test
+    if: ${{ github.ref == 'refs/heads/main' }}
+    steps:
+    - uses: actions/checkout@v2
+    - run: brew install hashicorp/tap/waypoint
+    - name: Set up gcloud Cloud SDK environment
+      uses: google-github-actions/setup-gcloud@master
+      with:
+        project_id: ${{ secrets.GCP_PROJECT_ID }}
+        service_account_key: ${{ secrets.GCP_SA_KEY }}
+        export_default_credentials: true
+    - run: gcloud config set run/region "$(jq -r .region platformconfig.json)"
+    - run: gcloud auth configure-docker -q
+    - name: Deploy
+      run: |
+        waypoint init
+        waypoint up --app=web
+    - run: |
+        ENDPOINT="$(gcloud run services describe --platform managed web --format=json | jq -r .status.url)" ./ci/smoketest
