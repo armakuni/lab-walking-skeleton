@@ -27,7 +27,7 @@ jobs:
     - run: brew install hashicorp/tap/waypoint
     - run: brew install terragrunt
     - name: Install latest nightly
-      uses: actions-rs/toolchain@v1
+      uses: actions-rs/toolchain@v1.0.7
       with:
         toolchain: nightly
         components: rustfmt, clippy
